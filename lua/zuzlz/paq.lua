@@ -22,6 +22,7 @@ require "paq" {
     "mbbill/undotree",
     "tpope/vim-eunuch",
     "tpope/vim-fugitive",
+    "lewis6991/gitsigns.nvim",
 
     "nvim-lua/plenary.nvim",
 
