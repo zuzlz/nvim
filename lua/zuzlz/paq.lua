@@ -26,10 +26,13 @@ require "paq" {
 
     "nvim-lua/plenary.nvim",
 
+    --theme
     "rebelot/kanagawa.nvim",
 
     "stevearc/oil.nvim",
     "ibhagwan/fzf-lua",
+    "nvim-tree/nvim-web-devicons",
+
 
     { "nvim-treesitter/nvim-treesitter", build = ':TSUpdate' },
     "nvim-treesitter/nvim-treesitter-textobjects",
@@ -54,4 +57,6 @@ require "paq" {
 
     -- Language
     -- "fatih/vim-go";
+    -- {"ray-x/go.nvim", build = ':lua require("go.install").update_all_sync()'},
+    --  "ray-x/guihua.lua", -- recommended if need floating window support
 }

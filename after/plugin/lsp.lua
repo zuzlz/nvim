@@ -22,8 +22,11 @@ require("mason-lspconfig").setup_handlers {
                 Lua = {
                     diagnostics = {
                         globals = { "vim", "it", "describe", "before_each", "after_each" },
-                    }
-                }
+                    },
+                    hint = {
+                        enable = true,
+                    },
+                },
             }
         }
     end,
@@ -33,9 +36,54 @@ require("mason-lspconfig").setup_handlers {
 lspconfig.ccls.setup {
     capabilities = capabilities
 }
+
+
 lspconfig.gopls.setup {
     capabilities = capabilities,
+    -- on_attach = function(c, b)
+    --     if c.server_capabilities.inlayHintProvider then
+    --         vim.lsp.inlay_hint.enable(true)
+    --     end
+    -- end,
+    settings = {
+        gopls = {
+            hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                constantValues = true,
+                functionTypeParameters = true,
+                parameterNames = true,
+                rangeVariableTypes = true,
+            },
+            semanticTokens = true,
+        },
+    },
 }
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+    group = vim.api.nvim_create_augroup('GoplsLspConfig', {}),
+    pattern = {"*.go"},
+  callback = function()
+    local params = vim.lsp.util.make_range_params()
+    params.context = {only = {"source.organizeImports"}}
+    -- buf_request_sync defaults to a 1000ms timeout. Depending on your
+    -- machine and codebase, you may want longer. Add an additional
+    -- argument after params if you find that you have to write the file
+    -- twice for changes to be saved.
+    -- E.g., vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
+    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params)
+    for cid, res in pairs(result or {}) do
+      for _, r in pairs(res.result or {}) do
+        if r.edit then
+          local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding or "utf-16"
+          vim.lsp.util.apply_workspace_edit(r.edit, enc)
+        end
+      end
+    end
+    vim.lsp.buf.format({async = false})
+  end,
+})
 
 
 -- lspconfig.lua_ls.setup {
@@ -69,20 +117,6 @@ lspconfig.gopls.setup {
 -- }
 --
 --
--- lspconfig.html.setup {
---     capabilities = capabilities,
--- }
--- lspconfig.htmx.setup {
---     capabilities = capabilities,
--- }
-
-vim.api.nvim_create_autocmd('BufWritePre', {
-    pattern = '*.go',
-    callback = function()
-        vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
-    end
-})
-
 
 
 -- Global mappings.
@@ -120,6 +154,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', '<leader>F', function()
             vim.lsp.buf.format { async = true }
         end, opts)
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if client.server_capabilities.inlayHintProvider then
+            vim.lsp.inlay_hint.enable(true)
+        end
     end,
 })
 
@@ -185,11 +223,11 @@ cmp.setup({
     formatting = {
         format = function(entry, vim_item)
             vim_item.menu = ({
-                buffer = '⌈BUF⌋',
-                nvim_lsp = '⌈LSP⌋',
-                luasnip = '⌈SNIP⌋',
-                nvim_lua = '⌈LUA⌋',
-                path = '⌈PATH⌋',
+                buffer = '[BUF]',
+                nvim_lsp = '[LSP]',
+                luasnip = '[SNIP]',
+                nvim_lua = '[LUA]',
+                path = '[PATH]',
             })[entry.source.name]
             return vim_item
         end,

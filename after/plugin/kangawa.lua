@@ -21,6 +21,9 @@ require('kanagawa').setup({
             PmenuSel = { fg = "NONE", bg = theme.ui.bg_p2 },
             PmenuSbar = { bg = theme.ui.bg_m1 },
             PmenuThumb = { bg = theme.ui.bg_p2 },
+            String = { fg = colors.palette.autumnGreen, italic = true },
+            LspInlayHint = { fg = theme.syn.comment, italic = true },
+
         }
     end,
     theme = "wave",    -- Load "wave" theme when 'background' option is not set
